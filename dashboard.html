@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="public/style.css">
+</head>
+<body>
+<div class="genbag stack-large">
+    <h1>Pets Channels</h1>
+    <h4>Welcome <b id="uss"></b></h4>
+    <div class="filters btn-group stack-exception">
+        <button type="button" id="m-chan" class="btn toggle-btn">
+            <span class="visually-hidden">Show </span>
+            <span>My channels</span>
+            <span class="visually-hidden"> tasks</span>
+        </button>
+        <button type="button" class="btn toggle-btn" id="ad-chan">
+            <span class="visually-hidden">Show </span>
+            <span>Join channel(s)</span>
+            <span class="visually-hidden"> tasks</span>
+        </button>
+    </div>
+    <div class="stack-small">
+        <div id="uschannels">
+            My channels
+            <div class="c-cb">
+                <p id="m-chans">
+
+                </p>
+            </div>
+            Set your preferred chanel <a id="pchan-link" href="pchanel.html">here</a>
+        </div>
+        <div id="addchannel" style="display: none">
+            <form id="ad-form">
+                <h2 class="label-wrapper">
+                    <label class="label__lg">
+                        Add channels
+                    </label>
+                </h2>
+                <div class="stack-small">
+                    <div id="f-area" class="stack stack-small">
+
+                    </div>
+                    <input type="hidden" id="uid" name="uid">
+                    <button type="submit" class="btn btn__primary btn__lg">
+                        Save
+                        <span class="visually-hidden">Button name to submit</span>
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js">
+</script>
+<script>
+    function displayMyPets(id) {
+        $.ajax({
+            url:'/pets/mychannels.php',
+            dataType: 'json',
+            type: 'post',
+            data:{'uid':id},
+            success: function (r) {
+                const pets = r.subs;
+                if(pets.length > 0){
+                    $('#m-chans').empty();
+                    $.each(pets,function (i, v) {
+                        var str = v.preferred === '1' ? ' (preferred)':'';
+                        $('#m-chans').append(v.pet+' channel'+str+' <br />');
+                    });
+                }
+                $('#uss').text(r.email);
+                $('#pchan-link').attr('href','pchanel.html?uid='+id);
+            },
+            error:function (x,h,s) {
+//                  alert(s);
+            }
+        });
+    }
+    $(document).ready(function () {
+        const uid = (location.search.split("uid" + '=')[1] || '').split('&')[0];
+        $('#uid').val(uid);
+        displayMyPets(uid);
+        $('#m-chan').on('click',function () {
+           displayMyPets(uid);
+           $('#addchannel').css('display','none');
+           $('#uschannels').css('display','block');
+        });
+        $('#ad-form').on('submit',function (e) {
+            e.preventDefault();
+            $.ajax({
+                url:'/pets/aduschannels.php',
+                dataType:'json',
+                type:'post',
+                data:$(this).serializeArray(),
+                success:function (re) {
+                    if(re.message){
+                        alert(re.message);
+                    }
+                },
+                error:function (x,h,s) {
+                    alert(s);
+                }
+            })
+        });
+        $('#ad-chan').on('click',function () {
+            $.ajax({
+                url:'/pets/allchanels.php',
+                dataType: 'json',
+                type: 'post',
+                data:{'uid':uid},
+                success: function (r) {
+                    var pets = r.pets;
+//                    alert(pets.length);
+//                    alert(JSON.stringify(pets));
+                    if(pets.length > 0){
+                        $('#f-area').empty();
+                        $.each(pets,function (i, v) {
+                            $('#f-area').append(
+                                '<div class="c-cb"> <input id="n-user" name="pid[]" value="'+v.id+'" type="checkbox"/> <label class="todo-label" for="n-user">'+v.pet+' </label> </div>'
+                            );
+                        });
+                    }
+                    $('#uss').text(r.email);
+                    $('#pchan-link').attr('href','pchanel.html?uid='+uid);
+                },
+                error:function (x,h,s) {
+//                  alert(s);
+                }
+            });
+            $('#addchannel').css('display','block');
+            $('#uschannels').css('display','none');
+        });
+    });
+</script>
+</body>
+</html>

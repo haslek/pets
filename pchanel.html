@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="public/style.css">
+</head>
+<body>
+<div class="genbag stack-large">
+<form id="pchanel">
+    <h2 class="label-wrapper">
+        <label class="label__lg">
+            Choose your preferred pet channel
+        </label>
+    </h2>
+    <div class="stack-small">
+        <select id="n-user" class="input__lg" name="pchanel" required>
+            <option value="">Select</option>
+        </select>
+
+        <input type="hidden" id="uid" name="uid">
+        <button type="submit" class="btn btn__primary btn__lg">
+            Save
+            <span class="visually-hidden">Button to submit chosen pet channel</span>
+        </button>
+        <a href="dashboard.html" class="btn btn__primary btn__lg">Back to dashboard
+            <span class="visually-hidden">Link to go back to dashboard</span>
+        </a>
+    </div>
+</form>
+
+</div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+    $(document).ready(function () {
+        const uid = (location.search.split("id" + '=')[1] || '').split('&')[0];
+        $('#uid').val(uid);
+
+        $.ajax({
+            url:'/pets/allchanels.php',
+            type:'get',
+            dataType:'json',
+            success:function (re) {
+                const pets = re.pets;
+                if(pets.length > 0){
+
+                    $.each(pets,function (i,v) {
+                        $('#n-user').append(
+                            '<option value="'+v.id+'">'+v.pet+' channel</option>'
+                        );
+                    });
+                }
+            }
+        });
+        $('#pchanel').on('submit',function (e) {
+            e.preventDefault();
+            $.ajax({
+                url:'/pets/addpchanel.php',
+                data: $(this).serializeArray(),
+                type:'post',
+                dataType:'json',
+                success:function (re) {
+                    if(re.error){
+                        alert(re.error);
+                    }else {
+                        alert(re.message);
+                        location.assign('/pets/dashboard.html?uid='+uid);
+                    }
+                },
+                error:function (x,h,s) {
+                    alert(s);
+                }
+            })
+        })
+    })
+</script>
+</body>
+</html>

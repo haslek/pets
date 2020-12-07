@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pets</title>
+    <link rel="stylesheet" href="public/style.css">
+</head>
+<body>
+<div class="genbag stack-large">
+    <h1>
+        Login
+    </h1>
+    <form class="stack-small" id="login-form">
+        <div id="frm">
+            <label class="" for="email">Email:</label>
+            <div class="input-wrapper">
+                <input id="email" name="email" class="input-text" required type="email"/>
+            </div>
+            <label class="" for="password">Password:</label>
+            <div class="input-wrapper" id="pass-div">
+                <input id="password" class="input-text" name="password" required type="password"/>
+            </div>
+        </div>
+        <div class="c-cb">
+            <input id="n-user" name="new_user" type="checkbox"/>
+            <label class="todo-label" for="n-user">
+                New User?
+            </label>
+        </div>
+        <button type="submit" class="btn btn__primary btn__lg">
+            Login
+            <span class="visually-hidden">Button name to submit</span>
+        </button>
+    </form>
+</div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+    $(document).ready(function () {
+       $('#n-user').on('change',function () {
+           if($(this).is(':checked')){
+               $('#pass-div').append(
+                   '<div id="cpass-div">' +
+                   '<label class="todo-label" for="cpass">Confirm Password:</label>' +
+                   '<div class="input-wrapper"><input type="password" id="cpass" class="input-text" required/></div>' +
+                   '</div>');
+           }else {
+               $('#cpass-div').remove();
+           }
+       });
+       $('#login-form').on('submit',function (e) {
+           e.preventDefault();
+           const data = $(this).serializeArray();
+//           alert(JSON.stringify(data));
+//           return false;
+           if($('#n-user').is(':checked')){
+               if($('#cpass').val() !== $('#password').val()){
+                   alert('Password field and Confirm pasword field must match');
+                   return false;
+               }
+           }
+           $.ajax({
+               url:'/pets/login_signup.php',
+               type: 'post',
+               dataType:'json',
+               data:data,
+               success:function (re) {
+                   if(re.error !== null){
+                       alert(re.error.toString());
+                   }else{
+                       if($('#n-user').is(':checked')){
+                           alert("Account created Successfully!!");
+                       }
+                       location.assign('/pets/dashboard.html?uid='+re.id);
+                   }
+               }
+           });
+       })
+    });
+</script>
+</body>
+</html>
